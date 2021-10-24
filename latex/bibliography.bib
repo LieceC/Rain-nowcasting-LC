@@ -1,0 +1,183 @@
+
+@article{shi_convolutional_nodate,
+	title = {Convolutional {LSTM} {Network}: {A} {Machine} {Learning} {Approach} for {Precipitation} {Nowcasting}},
+	abstract = {The goal of precipitation nowcasting is to predict the future rainfall intensity in a local region over a relatively short period of time. Very few previous studies have examined this crucial and challenging weather forecasting problem from the machine learning perspective. In this paper, we formulate precipitation nowcasting as a spatiotemporal sequence forecasting problem in which both the input and the prediction target are spatiotemporal sequences. By extending the fully connected LSTM (FC-LSTM) to have convolutional structures in both the input-to-state and state-to-state transitions, we propose the convolutional LSTM (ConvLSTM) and use it to build an end-to-end trainable model for the precipitation nowcasting problem. Experiments show that our ConvLSTM network captures spatiotemporal correlations better and consistently outperforms FC-LSTM and the state-of-theart operational ROVER algorithm for precipitation nowcasting.},
+	language = {en},
+	author = {Shi, Xingjian and Chen, Zhourong and Wang, Hao and Yeung, Dit-Yan and Wong, Wai-kin and Woo, Wang-chun},
+	pages = {9},
+	file = {Shi et al. - Convolutional LSTM Network A Machine Learning App.pdf:C\:\\Users\\danie\\Zotero\\storage\\IURUZL86\\Shi et al. - Convolutional LSTM Network A Machine Learning App.pdf:application/pdf},
+}
+
+@article{shi_deep_nodate,
+	title = {Deep {Learning} for {Precipitation} {Nowcasting}: {A} {Benchmark} and {A} {New} {Model}},
+	abstract = {With the goal of making high-resolution forecasts of regional rainfall, precipitation nowcasting has become an important and fundamental technology underlying various public services ranging from rainstorm warnings to ﬂight safety. Recently, the Convolutional LSTM (ConvLSTM) model has been shown to outperform traditional optical ﬂow based methods for precipitation nowcasting, suggesting that deep learning models have a huge potential for solving the problem. However, the convolutional recurrence structure in ConvLSTM-based models is location-invariant while natural motion and transformation (e.g., rotation) are location-variant in general. Furthermore, since deep-learning-based precipitation nowcasting is a newly emerging area, clear evaluation protocols have not yet been established. To address these problems, we propose both a new model and a benchmark for precipitation nowcasting. Speciﬁcally, we go beyond ConvLSTM and propose the Trajectory GRU (TrajGRU) model that can actively learn the location-variant structure for recurrent connections. Besides, we provide a benchmark that includes a real-world large-scale dataset from the Hong Kong Observatory, a new training loss, and a comprehensive evaluation protocol to facilitate future research and gauge the state of the art.},
+	language = {en},
+	author = {Shi, Xingjian and Gao, Zhihan and Lausen, Leonard and Wang, Hao and Yeung, Dit-Yan and Wong, Wai-kin and Woo, Wang-chun},
+	pages = {11},
+	file = {Shi et al. - Deep Learning for Precipitation Nowcasting A Benc.pdf:C\:\\Users\\danie\\Zotero\\storage\\FI6FDYW4\\Shi et al. - Deep Learning for Precipitation Nowcasting A Benc.pdf:application/pdf},
+}
+
+@article{trebing_smaat-unet_2021,
+	title = {{SmaAt}-{UNet}: {Precipitation} {Nowcasting} using a {Small} {Attention}-{UNet} {Architecture}},
+	shorttitle = {{SmaAt}-{UNet}},
+	url = {http://arxiv.org/abs/2007.04417},
+	abstract = {Weather forecasting is dominated by numerical weather prediction that tries to model accurately the physical properties of the atmosphere. A downside of numerical weather prediction is that it is lacking the ability for short-term forecasts using the latest available information. By using a data-driven neural network approach we show that it is possible to produce an accurate precipitation nowcast. To this end, we propose SmaAt-UNet, an eﬃcient convolutional neural networks-based on the well known UNet architecture equipped with attention modules and depthwise-separable convolutions. We evaluate our approaches on a real-life datasets using precipitation maps from the region of the Netherlands and binary images of cloud coverage of France. The experimental results show that in terms of prediction performance, the proposed model is comparable to other examined models while only using a quarter of the trainable parameters.},
+	language = {en},
+	urldate = {2021-10-04},
+	journal = {arXiv:2007.04417 [cs, eess]},
+	author = {Trebing, Kevin and Stanczyk, Tomasz and Mehrkanoon, Siamak},
+	month = jan,
+	year = {2021},
+	note = {arXiv: 2007.04417},
+	keywords = {Computer Science - Machine Learning, Electrical Engineering and Systems Science - Image and Video Processing, I.2, I.5},
+	annote = {Comment: 9 pages, 4 figures},
+	file = {Trebing et al. - 2021 - SmaAt-UNet Precipitation Nowcasting using a Small.pdf:C\:\\Users\\danie\\Zotero\\storage\\DAHLXAS6\\Trebing et al. - 2021 - SmaAt-UNet Precipitation Nowcasting using a Small.pdf:application/pdf},
+}
+
+@article{ravuri_skilful_2021,
+	title = {Skilful precipitation nowcasting using deep generative models of radar},
+	volume = {597},
+	issn = {0028-0836, 1476-4687},
+	url = {https://www.nature.com/articles/s41586-021-03854-z},
+	doi = {10.1038/s41586-021-03854-z},
+	abstract = {Abstract
+            
+              Precipitation nowcasting, the high-resolution forecasting of precipitation up to two hours ahead, supports the real-world socioeconomic needs of many sectors reliant on weather-dependent decision-making
+              1,2
+              . State-of-the-art operational nowcasting methods typically advect precipitation fields with radar-based wind estimates, and struggle to capture important non-linear events such as convective initiations
+              3,4
+              . Recently introduced deep learning methods use radar to directly predict future rain rates, free of physical constraints
+              5,6
+              . While they accurately predict low-intensity rainfall, their operational utility is limited because their lack of constraints produces blurry nowcasts at longer lead times, yielding poor performance on rarer medium-to-heavy rain events. Here we present a deep generative model for the probabilistic nowcasting of precipitation from radar that addresses these challenges. Using statistical, economic and cognitive measures, we show that our method provides improved forecast quality, forecast consistency and forecast value. Our model produces realistic and spatiotemporally consistent predictions over regions up to 1,536 km × 1,280 km and with lead times from 5–90 min ahead. Using a systematic evaluation by more than 50 expert meteorologists, we show that our generative model ranked first for its accuracy and usefulness in 89\% of cases against two competitive methods. When verified quantitatively, these nowcasts are skillful without resorting to blurring. We show that generative nowcasting can provide probabilistic predictions that improve forecast value and support operational utility, and at resolutions and lead times where alternative methods struggle.},
+	language = {en},
+	number = {7878},
+	urldate = {2021-10-04},
+	journal = {Nature},
+	author = {Ravuri, Suman and Lenc, Karel and Willson, Matthew and Kangin, Dmitry and Lam, Remi and Mirowski, Piotr and Fitzsimons, Megan and Athanassiadou, Maria and Kashem, Sheleem and Madge, Sam and Prudden, Rachel and Mandhane, Amol and Clark, Aidan and Brock, Andrew and Simonyan, Karen and Hadsell, Raia and Robinson, Niall and Clancy, Ellen and Arribas, Alberto and Mohamed, Shakir},
+	month = sep,
+	year = {2021},
+	pages = {672--677},
+	file = {Ravuri et al. - 2021 - Skilful precipitation nowcasting using deep genera.pdf:C\:\\Users\\danie\\Zotero\\storage\\MU6BUR38\\Ravuri et al. - 2021 - Skilful precipitation nowcasting using deep genera.pdf:application/pdf},
+}
+
+@article{bouget_fusion_2021,
+	title = {Fusion of rain radar images and wind forecasts in a deep learning model applied to rain nowcasting},
+	url = {http://arxiv.org/abs/2012.05015},
+	abstract = {Short- or mid-term rainfall forecasting is a major task with several environmental applications such as agricultural management or ﬂood risk monitoring. Existing data-driven approaches, especially deep learning models, have shown signiﬁcant skill at this task, using only rainfall radar images as inputs. In order to determine whether using other meteorological parameters such as wind would improve forecasts, we trained a deep learning model on a fusion of rainfall radar images and wind velocity produced by a weather forecast model. The network was compared to a similar architecture trained only on radar data, to a basic persistence model and to an approach based on optical ﬂow. Our network outperforms by 8\% the F1-score calculated for the optical ﬂow on moderate and higher rain events for forecasts at a horizon time of 30 min. Furthermore, it outperforms by 7\% the same architecture trained using only rainfall radar images. Merging rain and wind data has also proven to stabilize the training process and enabled signiﬁcant improvement especially on the difﬁcult-to-predict high precipitation rainfalls.},
+	language = {en},
+	urldate = {2021-10-04},
+	journal = {arXiv:2012.05015 [physics]},
+	author = {Bouget, Vincent and Béréziat, Dominique and Brajard, Julien and Charantonis, Anastase and Filoche, Arthur},
+	month = jan,
+	year = {2021},
+	note = {arXiv: 2012.05015},
+	keywords = {Computer Science - Machine Learning, Electrical Engineering and Systems Science - Signal Processing, Physics - Atmospheric and Oceanic Physics},
+	annote = {Comment: In press in Remote Sensing (MDPI)},
+	file = {Bouget et al. - 2021 - Fusion of rain radar images and wind forecasts in .pdf:C\:\\Users\\danie\\Zotero\\storage\\8SPE2GEV\\Bouget et al. - 2021 - Fusion of rain radar images and wind forecasts in .pdf:application/pdf},
+}
+
+@inproceedings{tanelli_tracking_1999,
+	title = {Tracking radar echoes by multiscale correlation: a nowcasting weather radar application},
+	volume = {3871},
+	shorttitle = {Tracking radar echoes by multiscale correlation},
+	url = {https://www.spiedigitallibrary.org/conference-proceedings-of-spie/3871/0000/Tracking-radar-echoes-by-multiscale-correlation--a-nowcasting-weather/.full},
+	doi = {10.1117/12.373261},
+	abstract = {An algorithm for storm tracking through weather radar data is presented. It relies on the crosscorrelation principle as in TREC (Tracking Radar Echoes by Correlation) and derived algorithms. The basic idea is to subdivide the radar maps in Cartesian format in a grid of square boxes and to exploit the so called local translation hypothesis. The motion vector is estimated as the space shift such that corresponding boxes at different times exhibit the maximum correlation coefficient. The discussed technique adopts a multiscale, multiresolution, and partially overlapped box grid which adapts to the radar reflectivity pattern. Multiresolution decomposition is performed through 2D wavelet based filtering. Correlation coefficients are calculated taking into account unreliable data (e.g. due to ground clutter or beam shielding) in order to avoid strong undesired motion estimation biases due to the presence of such stationary features. Data are gathered through a C-band multipolarimetric doppler weather radar. Results show that the technique overcomes some problems highlighted by researchers in previous related studies. Comparison with radial velocity maps shows good correlation values; although they may vary depending on the specific event and on the orographic complexity of the considered area, estimated motion fields are consistent with the shift of the pattern determined through simple visual inspection.},
+	urldate = {2021-10-05},
+	booktitle = {Image and {Signal} {Processing} for {Remote} {Sensing} {V}},
+	publisher = {SPIE},
+	author = {Tanelli, Simone and Facheris, Luca and Cuccoli, Fabrizio and Giuli, Dino},
+	month = dec,
+	year = {1999},
+	pages = {228--238},
+	file = {Snapshot:C\:\\Users\\danie\\Zotero\\storage\\GJS7K4ML\\12.373261.html:text/html},
+}
+
+@article{li_nowcasting_1995,
+	title = {Nowcasting of {Motion} and {Growth} of {Precipitation} with {Radar} over a {Complex} {Orography}},
+	volume = {34},
+	doi = {10.1175/1520-0450(1995)034<1286:NOMAGO>2.0.CO;2},
+	abstract = {Motion vectors of radar echo patterns can be obtained by applying a cross-correlation method (e.g., the TREC method) to radar data collected several minutes apart Here an extension of TREC, called COTREC, is presented. Based on constraints and a variational technique, this extension is an efficient objective analysis method for smoothing the motion vectors and forcing them to fulfill the continuity equation. COTREC corrects the apparently wrong vectors that are often caused by failures of TREC. This allows us to identify regions of growth and decay of radar echoes.For different types of precipitation (convective and widespread), radar data were collected for evaluation of COTREC in complex orography. A comparison between the radial velocity components of retrieved fields of echo motion and the measured Doppler velocity has been made. A marked reduction of the differences with respect to the measured Doppler field was obtained for COTREC, as compared to TREC vectors.A retardation of COTREC-derived motion compared to Doppler-derived motion was found in orographic precipitation. This retardation may have two causes: 1) a tendency of radar patterns to become stationary (triggered) on upsloping orography; and 2) the influence of ground clutter and shielding, also highly correlated with orography. While the first reflects the fact that propagation of echoes (by growth/decay) and translation of echoes (with the wind) are two different phenomena, the second cause is an artifact produced by the method of observation (radar) but mitigated with Doppler techniques (by suppressing the stationary ground clutter).COTREC may be useful for nowcasting, especially in orographically complex areas: for orographic precipitation as well as for severe convective storms, the technique predicts the echo development approximately 20 min ahead, and there is good hope to extend the forecasting period.},
+	journal = {Journal of Applied Meteorology - J APPL METEOROL},
+	author = {Li, L. and Schmid, Willi and Joss, J.},
+	month = jun,
+	year = {1995},
+	pages = {1286--1300},
+	file = {Full Text PDF:C\:\\Users\\danie\\Zotero\\storage\\SK543DQY\\Li et al. - 1995 - Nowcasting of Motion and Growth of Precipitation w.pdf:application/pdf},
+}
+
+@article{laroche_variational_1994,
+	title = {A {Variational} {Analysis} {Method} for {Retrieval} of {Three}-{Dimensional} {Wind} {Field} from {Single}-{Doppler} {Radar} {Data}},
+	volume = {51},
+	doi = {10.1175/1520-0469(1994)051<2664:AVAMFR>2.0.CO;2},
+	abstract = {A variational method for retrieval of the three-dimensional wind field from single-Doppler radar observations is developed and tested. The method uses the conservation equation for reflectivity and the
+continuity equation as a constraining model. Weak and strong constraint formalisms in data analysis am reviewed and compared using a
+one-dimensional advection equation for reflectivity considered as a passive tracer. The authors show that a model equation should be used as a weak constraint when the model does not predict exactly the evolution of the observations (such as the conservation equation for
+reflectivity). Consequently, the variational method presented here combines both formalisms: the conservation equation for reflectivity is used as a weak constraint, while the continuity equation is used as a strong constraint. The method is applied to retrieve detailed
+three-dimensional wind field of a microburst observed by two C-band Doppler radars during the Phoenix II Convective Boundary Layer
+Experiment. Retrieved wind fields are compared with dual-Doppler wind analysis. Results of experiments show that the cost function has
+multiple minima, and consequently retrievals are sensitive to the initial guess. To find the true minimum the retrieval is performed from large to small scale. The results are very encouraging.},
+	journal = {Journal of Atmospheric Sciences},
+	author = {Laroche, Stéphane and Zawadzki, Isztar},
+	month = aug,
+	year = {1994},
+	pages = {2664--2682},
+	file = {Full Text PDF:C\:\\Users\\danie\\Zotero\\storage\\GKQWDR6L\\Laroche et Zawadzki - 1994 - A Variational Analysis Method for Retrieval of Thr.pdf:application/pdf},
+}
+
+@misc{noauthor_thunderstorm_nodate,
+	title = {Thunderstorm {Identification}, {Tracking}, {Analysis}, and {Nowcasting} ({TITAN}) {\textbar} {NCAR} {Research} {Applications} {Laboratory} {\textbar} {RAL}},
+	url = {https://ral.ucar.edu/solutions/products/thunderstorm-identification-tracking-analysis-and-nowcasting-titan},
+	urldate = {2021-10-05},
+	file = {Thunderstorm Identification, Tracking, Analysis, and Nowcasting (TITAN) | NCAR Research Applications Laboratory | RAL:C\:\\Users\\danie\\Zotero\\storage\\P8N4J2QW\\thunderstorm-identification-tracking-analysis-and-nowcasting-titan.html:text/html},
+}
+
+@article{johnson_storm_1998,
+	title = {The {Storm} {Cell} {Identification} and {Tracking} {Algorithm}: {An} {Enhanced} {WSR}-{88D} {Algorithm}},
+	volume = {13},
+	shorttitle = {The {Storm} {Cell} {Identification} and {Tracking} {Algorithm}},
+	doi = {10.1175/1520-0434(1998)013<0263:TSCIAT>2.0.CO;2},
+	abstract = {Accurate storm identification and tracking are basic and essential parts of radar and severe weather warning operations in today's operational meteorological community. Improvements over the original WSR-88D storm series algorithm have been made with the Storm Cell Identification and Tracking algorithm (SCIT). This paper discusses the SCIT algorithm, a centroid tracking algorithm with improved methods of identifying storms (both isolated and clustered or line storms). In an analysis of 6561 storm cells, the SCIT algorithm correctly identified 68\% of all cells with maximum reflectivities over 40 dBZ and 96\% of all cells with maximum reflectivities of 50 dBZ or greater. The WSR-88D storm series algorithm performed at 24\% and 41\%, respectively, for the same dataset. With better identification performance, the potential exists for better and more accurate tracking information. The SCIT algorithm tracked greater than 90\% of all storm cells correctly. The algorithm techniques and results of a detailed performance evaluation are presented. This algorithm was included in the WSR-88D Build 9.0 of the Radar Products Generator software during late 1996 and early 1997. It is hoped that this paper will give new users of the algorithm sufficient background information to use the algorithm with confidence.},
+	journal = {Weather and Forecasting - WEATHER FORECAST},
+	author = {Johnson, J. and MacKeen, Pamela and Witt, Arthur and Mitchell, E. and Stumpf, Greg and Eilts, Michael and Thomas, Kevin},
+	month = jun,
+	year = {1998},
+	pages = {263--276},
+	file = {Full Text PDF:C\:\\Users\\danie\\Zotero\\storage\\H6IKVTDF\\Johnson et al. - 1998 - The Storm Cell Identification and Tracking Algorit.pdf:application/pdf},
+}
+
+@article{handwerker_cell_2002,
+	title = {Cell tracking with {TRACE3D}—a new algorithm},
+	volume = {61},
+	issn = {01698095},
+	url = {https://linkinghub.elsevier.com/retrieve/pii/S0169809501001004},
+	doi = {10.1016/S0169-8095(01)00100-4},
+	abstract = {An automated algorithm called TRACE3D is presented which identifies convective cells and tracks them in time and space by exclusively using radar reflectivity data as input. Identification of cells is performed by assembling contiguous regions that excel certain reflectivity thresholds. Tracking is done in that the position of a cell in a new radar image is predicted by an extrapolation procedure based on its former position; special care is taken in case of possible splitting and merging events. In comparing the results of the tracking algorithm with those from four test persons, TRACE3D shows a promising performance, and hence, it seems possible to apply this algorithm as a nowcasting tool. D 2002 Elsevier Science B.V. All rights reserved.},
+	language = {en},
+	number = {1},
+	urldate = {2021-10-05},
+	journal = {Atmospheric Research},
+	author = {Handwerker, Jan},
+	month = jan,
+	year = {2002},
+	pages = {15--34},
+	file = {Handwerker - 2002 - Cell tracking with TRACE3D—a new algorithm.pdf:C\:\\Users\\danie\\Zotero\\storage\\CK5GC8HR\\Handwerker - 2002 - Cell tracking with TRACE3D—a new algorithm.pdf:application/pdf},
+}
+
+
+@article{woo_operational_2017,
+	title = {Operational {Application} of {Optical} {Flow} {Techniques} to {Radar}-{Based} {Rainfall} {Nowcasting}},
+	volume = {8},
+	issn = {2073-4433},
+	url = {http://www.mdpi.com/2073-4433/8/3/48},
+	doi = {10.3390/atmos8030048},
+	abstract = {Hong Kong Observatory has been operating an in-house developed rainfall nowcasting system called “Short-range Warning of Intense Rainstorms in Localized Systems (SWIRLS)” to support rainstorm warning and rainfall nowcasting services. A crucial step in rainfall nowcasting is the tracking of radar echoes to generate motion ﬁelds for extrapolation of rainfall areas in the following few hours. SWIRLS adopted a correlation-based method in its ﬁrst operational version in 1999, which was subsequently replaced by optical ﬂow algorithm in 2010 and further enhanced in 2013. The latest optical ﬂow algorithm employs a transformation function to enhance a selected range of reﬂectivity for feature tracking. It also adopts variational optical ﬂow computation that takes advantage of the Horn–Schunck approach and the Lucas–Kanade method. This paper details the three radar echo tracking algorithms, examines their performances in several signiﬁcant rainstorm cases and summaries veriﬁcation results of multi-year performances. The limitations of the current approach are discussed. Developments underway along with future research areas are also presented.},
+	language = {en},
+	number = {12},
+	urldate = {2021-10-06},
+	journal = {Atmosphere},
+	author = {Woo, Wang-chun and Wong, Wai-kin},
+	month = feb,
+	year = {2017},
+	pages = {48},
+}

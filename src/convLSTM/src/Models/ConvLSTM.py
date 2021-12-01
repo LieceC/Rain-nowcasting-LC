@@ -49,8 +49,6 @@ class ConvLSTM(nn.Module):
             h, c = hidden_state[layer_idx]
             output_inner = []
             for t in range(seq_len):
-                print(layer_idx,t)
-                print(cur_layer_input.shape)
                 h, c = self.cell_list[layer_idx](inputs=cur_layer_input[:, t, :, :, :],
                                                  hidden_state=[h, c])
                 output_inner.append(h)

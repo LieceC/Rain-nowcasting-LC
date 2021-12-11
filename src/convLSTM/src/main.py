@@ -17,9 +17,9 @@ def trainer(input_shape=(128, 128), input_dim=1, hidden_dim=64, kernel_size=3, i
                    hidden_dim=hidden_dim,
                    kernel_size=kernel_size)
 
-    train = MeteoDataset(rain_dir='D:\\MeteoNet-Brest\\rainmap\\train', input_length=input_length,
+    train = MeteoDataset(rain_dir='MeteoNet-Brest\\rainmap\\train', input_length=input_length,
                          output_length=output_length)
-    val = MeteoDataset(rain_dir='D:\\\MeteoNet-Brest\\rainmap\\val', input_length=input_length,
+    val = MeteoDataset(rain_dir='MeteoNet-Brest\\rainmap\\val', input_length=input_length,
                        output_length=output_length)
 
     train_dataloader = DataLoader(train, batch_size=batch_size, shuffle=True)
@@ -28,7 +28,7 @@ def trainer(input_shape=(128, 128), input_dim=1, hidden_dim=64, kernel_size=3, i
     optimizer = torch.optim.Adam(net.parameters(), lr=0.0001)
     loss_f = torch.nn.CrossEntropyLoss()
 
-    device = torch.device("cpu")
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
     net.to(device)
 

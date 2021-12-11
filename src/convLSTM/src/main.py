@@ -1,4 +1,3 @@
-import matplotlib.pyplot as plt
 import numpy as np
 from torch.utils.data import DataLoader
 from torch.utils.tensorboard import SummaryWriter
@@ -9,8 +8,8 @@ from src.dataset import MeteoDataset
 from src.utils import tensorify
 
 
-def trainer(input_shape=(128, 128), input_dim=1, hidden_dim=64, kernel_size=3, input_length=5, output_length=5,
-            batch_size=10, epochs=50):
+def trainer(input_shape=(128, 128), input_dim=1, hidden_dim=64, kernel_size=3, input_length=5, output_length=15,
+            batch_size=1, epochs=50):
     torch.manual_seed(1)
     board = SummaryWriter()
     net = ConvLSTM(input_shape=input_shape,
@@ -18,16 +17,16 @@ def trainer(input_shape=(128, 128), input_dim=1, hidden_dim=64, kernel_size=3, i
                    hidden_dim=hidden_dim,
                    kernel_size=kernel_size)
 
-    train = MeteoDataset(rain_dir='C:\\Users\\liece\\MeteoNet-Brest\\rainmap\\train', input_length=input_length,
+    train = MeteoDataset(rain_dir='D:\\MeteoNet-Brest\\rainmap\\train', input_length=input_length,
                          output_length=output_length)
-    val = MeteoDataset(rain_dir='C:\\Users\\liece\\MeteoNet-Brest\\rainmap\\val', input_length=input_length,
+    val = MeteoDataset(rain_dir='D:\\\MeteoNet-Brest\\rainmap\\val', input_length=input_length,
                        output_length=output_length)
 
     train_dataloader = DataLoader(train, batch_size=batch_size, shuffle=True)
     valid_dataloader = DataLoader(val, batch_size=batch_size, shuffle=True)
 
     optimizer = torch.optim.Adam(net.parameters(), lr=0.0001)
-    loss_f = torch.nn.MSELoss()
+    loss_f = torch.nn.CrossEntropyLoss()
 
     device = torch.device("cpu")
 
@@ -52,28 +51,22 @@ def trainer(input_shape=(128, 128), input_dim=1, hidden_dim=64, kernel_size=3, i
             pred = tensorify(net(inputs)[0])
             pred = torch.squeeze(pred, 0)
             loss = loss_f(pred, targets)
-            x = torch.flatten(pred, 0, 2)
-            y = torch.flatten(targets, 0, 2)
-            plt.close("all")
-            if epoch > 5:
-                for pre, tar in zip(x, y):
-                    min_p, max_p = torch.min(pred), torch.max(pred)
-                    min_t, max_t = torch.min(tar), torch.max(tar)
-                    fig, (ax1, ax2) = plt.subplots(1, 2)
-                    ax1.imshow(pre.detach().numpy(), cmap=plt.get_cmap('gray'), vmin=min_p, vmax=max_p)
-                    ax1.set_title("pred")
-                    ax2.imshow(tar.detach().numpy(), cmap=plt.get_cmap('gray'), vmin=min_t, vmax=max_t)
-                    ax2.set_title("target")
-                    plt.show()
             average_loss = loss.item() / batch_size
             train_losses.append(average_loss)
             loss.backward()
             optimizer.step()
+
             t.set_postfix({
                 'trainloss': '{:.6f}'.format(average_loss),
                 'epoch': '{:02d}'.format(epoch)
             })
-
+        save = "checkpoint.pth"
+        state = {
+            'epoch': epoch,
+            'state_dict': net.state_dict(),
+            'optimizer': optimizer.state_dict()
+        }
+        torch.save(state, save)
         net.eval()
         t = tqdm(valid_dataloader, leave=False, total=len(valid_dataloader))
 

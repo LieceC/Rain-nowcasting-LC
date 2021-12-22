@@ -16,7 +16,8 @@ class MeteoDataset(Dataset):
         self.output_length = output_length
         self.temporal_stride = temporal_stride
         self.indices = []
-        self.files_names = [f for f in os.listdir(rain_dir)[:10000] if os.path.isfile(os.path.join(rain_dir, f))]
+        self.normalization = 100/12
+        self.files_names = [f for f in os.listdir(rain_dir) if os.path.isfile(os.path.join(rain_dir, f))]
         self.files_names = sorted(self.files_names, key=lambda x: get_date_from_file_name(x))
         if dataset == 'valid':
             self.files_names = [val for (idx, val) in enumerate(self.files_names) if
@@ -44,24 +45,24 @@ class MeteoDataset(Dataset):
 
         # Create a sequence of input rain maps.
         rain_map = np.load(path_files[0])
-        rain_map = rain_map[rain_map.files[0]]
+        rain_map = rain_map[rain_map.files[0]] / self.normalization
         rain_map = torch.unsqueeze(torch.from_numpy(rain_map).float(), dim=0)[None, :]
         rain_sequence_data = rain_map
 
         for k in range(1, self.input_length):
             rain_map = np.load(path_files[k])
-            rain_map = rain_map[rain_map.files[0]]
+            rain_map = rain_map[rain_map.files[0]] / self.normalization
             rain_map = torch.unsqueeze(torch.from_numpy(rain_map).float(), dim=0)[None, :]
             rain_sequence_data = torch.cat((rain_sequence_data, rain_map), dim=0)
 
         # Create a sequence of target rain maps.
         rain_map = np.load(path_files[self.output_length])
-        rain_map = rain_map[rain_map.files[0]]
+        rain_map = rain_map[rain_map.files[0]] / self.normalization
         rain_map = torch.unsqueeze(torch.from_numpy(rain_map).float(), dim=0)[None, :]
         rain_sequence_target = rain_map
         for k in range(self.input_length + 1, self.output_length + self.input_length):
             rain_map = np.load(path_files[k])
-            rain_map = rain_map[rain_map.files[0]]
+            rain_map = rain_map[rain_map.files[0]] / self.normalization
             rain_map = torch.unsqueeze(torch.from_numpy(rain_map).float(), dim=0)[None, :]
             rain_sequence_target = torch.cat((rain_sequence_target, rain_map), 0)
 

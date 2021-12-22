@@ -1,4 +1,7 @@
+import torch.nn.functional as F
+
 from src.Models.convlstmcell import *
+from src.utils import tensorify
 
 """
 Implémentation of the ConvLSTM architecture from this paper : https://arxiv.org/pdf/1506.04214.pdf
@@ -40,6 +43,12 @@ class ConvLSTM(nn.Module):
                                       bias=bias)
         self.cell_list = nn.ModuleList([self.lstmcell1, self.lstmcell2, self.lstmcell3, self.lstmcell4])
 
+        self.conv = nn.Conv2d(in_channels=self.input_dim,
+                              out_channels=self.input_dim,
+                              kernel_size=1,
+                              padding=0,
+                              bias=bias)
+
     def forward(self, input):
         hidden_state = self._init_hidden(batch_size=input.shape[0],
                                          image_size=self.input_shape)
@@ -65,6 +74,11 @@ class ConvLSTM(nn.Module):
             last_state_list.append([h, c])
             layer_output_list = layer_output_list[-1:]
             last_state_list = last_state_list[-1:]
+        layer_output_list = tensorify(layer_output_list)
+        layer_output_list = torch.squeeze(layer_output_list, 0)
+        layer_output_list = torch.permute(layer_output_list, (0, 2, 1, 3, 4))
+        layer_output_list = F.relu(self.conv(layer_output_list))
+        layer_output_list = torch.permute(layer_output_list, (0, 2, 1, 3, 4))
         return layer_output_list, last_state_list
 
     def _init_hidden(self, batch_size, image_size):

@@ -1,11 +1,12 @@
-import numpy as np
 from torch.utils.data import DataLoader
 from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
 
-from Models.ConvLSTM import ConvLSTM, torch
+from Models.ConvLSTM import ConvLSTM
 from dataset import MeteoDataset
-from utils import tensorify
+from eval import *
+from sampler import CustomSampler, indices_except_undefined_sampler
+from utils import *
 
 
 def trainer(input_shape=(128, 128), input_dim=1, hidden_dim=64, kernel_size=3, input_length=2, output_length=2,
@@ -22,43 +23,41 @@ def trainer(input_shape=(128, 128), input_dim=1, hidden_dim=64, kernel_size=3, i
 
     train = MeteoDataset(rain_dir='../data/rainmap/train', input_length=input_length,
                          output_length=output_length, temporal_stride=input_length, dataset='train')
-    # train_sampler = CustomSampler(indices_except_undefined_sampler(train), train)
+    train_sampler = CustomSampler(indices_except_undefined_sampler(train), train)
 
     val = MeteoDataset(rain_dir='../data/rainmap/val', input_length=input_length,
                        output_length=output_length, temporal_stride=input_length, dataset='valid')
-    # val_sampler = CustomSampler(indices_except_undefined_sampler(val), val)
+    val_sampler = CustomSampler(indices_except_undefined_sampler(val), val)
 
-    train_dataloader = DataLoader(train, batch_size=batch_size)
-    valid_dataloader = DataLoader(val, batch_size=batch_size, shuffle=True)
+    train_dataloader = DataLoader(train, batch_size=batch_size, sampler=train_sampler)
+    valid_dataloader = DataLoader(val, batch_size=batch_size, sampler=val_sampler)
 
-    optimizer = torch.optim.Adam(net.parameters(), lr=10e-8, betas=(0.9, 0.999))
-    loss_f = torch.nn.BCEWithLogitsLoss()
+    optimizer = torch.optim.Adam(net.parameters(), lr=0.0008, betas=(0.9, 0.999), weight_decay=0.1)
 
     avg_train_losses = []
     avg_val_losses = []
 
-    thresholds_in_mmh = [0, 0.1, 1, 2.5]  # CRF over 1h
-    thresholds_in_cent_mm = [100 * k / 12 for k in thresholds_in_mmh]
-
-    # thresholds_normalized = np.log(np.array(thresholds_in_cent_mm) + 1) / train.norm_factor
+    thresholds_in_mmh = [0.1, 1, 2.5]  # CRF over 1h
 
     cur_epoch = 0
     for epoch in range(cur_epoch, epochs):
-        print(epoch)
+        confusion_matrix = {}
+        for thresh in thresholds_in_mmh:
+            confusion_matrix[str(thresh)] = {'TP': [0] * output_length,
+                                             'FP': [0] * output_length, 'FN': [0] * output_length}
         train_losses = []
         val_losses = []
         net.train()
         t = tqdm(train_dataloader, leave=False, total=len(train_dataloader))
         for batch_idx, sample in enumerate(t):
             inputs, targets = sample['input'], sample['target']
+            # [Batch, sequence, Channel, Height, Width]
             inputs = inputs.to(device)
             targets = targets.to(device)
             optimizer.zero_grad()
-            pred = tensorify(net(inputs)[0])
-            pred = torch.squeeze(pred, 0)
-            # print(pred.size())
-            # print(targets.size())
-            loss = loss_f(pred, targets)
+            pred = net(inputs)[0]
+            mask = compute_weight_mask(targets)
+            loss = weighted_mse_loss(pred, targets, mask) + weighted_mae_loss(pred, targets, mask)
             average_loss = loss.item() / batch_size
             train_losses.append(average_loss)
             loss.backward()
@@ -68,7 +67,7 @@ def trainer(input_shape=(128, 128), input_dim=1, hidden_dim=64, kernel_size=3, i
                 'trainloss': '{:.6f}'.format(average_loss),
                 'epoch': '{:02d}'.format(epoch)
             })
-        save = "checkpoint.pth"
+        save = "checkpoints/model_at_{}.pth".format(epoch)
         state = {
             'epoch': epoch,
             'state_dict': net.state_dict(),
@@ -82,15 +81,21 @@ def trainer(input_shape=(128, 128), input_dim=1, hidden_dim=64, kernel_size=3, i
             inputs, targets = sample['input'], sample['target']
             inputs = inputs.to(device, dtype=torch.float32)
             targets = targets.to(device, dtype=torch.float32)
-            pred = tensorify(net(inputs)[0])
-            pred = torch.squeeze(pred, 0)
-            loss = loss_f(pred, targets)
+            pred = net(inputs)[0]
+            mask = compute_weight_mask(targets)
+            loss = weighted_mse_loss(pred, targets, mask) + weighted_mae_loss(pred, targets, mask)
             average_loss = loss.item() / batch_size
             val_losses.append(average_loss)
             t.set_postfix({
                 'validloss': '{:.6f}'.format(average_loss),
                 'epoch': '{:02d}'.format(epoch)
             })
+            for thresh in thresholds_in_mmh:
+                conf_mat_batch = compute_confusion(pred, targets, thresh)
+                confusion_matrix = add_confusion_matrix_on_batch(confusion_matrix, conf_mat_batch, thresh)
+
+        scores_evaluation = model_evaluation(confusion_matrix)
+        print("[Validation] metrics_scores : ", scores_evaluation)
         avg_train_losses.append(np.average(train_losses))
         avg_val_losses.append(np.average(val_losses))
         board.add_scalar('TrainLoss', avg_train_losses[-1], epoch)

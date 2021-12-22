@@ -37,6 +37,8 @@ def save_gif(single_seq, fname):
     """Save a single gif consisting of image sequence in single_seq to fname."""
     # [S,I,H,W]
     single_seq = torch.permute(single_seq, (0, 2, 3, 1))
+    single_seq = torch.squeeze(single_seq, -1)
+    single_seq = single_seq.cpu().detach().numpy()
     img_seq = [Image.fromarray(img.astype(np.float32) * 255, 'F').convert("L") for img in single_seq]
     img = img_seq[0]
     img.save(fname, save_all=True, append_images=img_seq[1:])
@@ -75,3 +77,28 @@ def tensorify(lst):
     # end of loop lst[d_i] = tensor([D_i, ... D_0])
     tensor_lst = torch.stack(lst, dim=0)
     return tensor_lst
+
+
+def weighted_mse_loss(output, target, weight_mask):
+    return torch.sum(torch.multiply(weight_mask, (output - target) ** 2))
+
+
+def weighted_mae_loss(output, target, weight_mask):
+    return torch.sum(torch.multiply(weight_mask, torch.abs(output - target)))
+
+
+def compute_weight_mask(target):
+    """
+    threshold = [0, 2, 5, 10, 30, 1000]
+    weights = [1., 2., 5., 10., 30.]
+    # To solve
+    mask = torch.ones(target.size(), dtype=torch.double).cuda()
+    for k in range(len(weights)):
+        mask = torch.where((threshold[k] <= target) & (target < threshold[k+1]), weights[k], mask)
+    """
+
+    ### Fix for small gpu below
+    return torch.where((0 <= target) & (target < 0.1), 1., 0.) \
+           + torch.where((0.1 <= target) & (target < 1), 2., 0.) \
+           + torch.where((1 <= target) & (target < 2.5), 4., 0.) \
+           + torch.where((2.5 <= target), 8., 0.)

@@ -35,6 +35,8 @@ def missing_file_in_sequence(files_names):
 
 def save_gif(single_seq, fname):
     """Save a single gif consisting of image sequence in single_seq to fname."""
+    # [S,I,H,W]
+    single_seq = torch.permute(single_seq, (0, 2, 3, 1))
     img_seq = [Image.fromarray(img.astype(np.float32) * 255, 'F').convert("L") for img in single_seq]
     img = img_seq[0]
     img.save(fname, save_all=True, append_images=img_seq[1:])

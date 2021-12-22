@@ -1,9 +1,10 @@
 import torch
 import torch.nn as nn
+from torch.autograd import Variable
 
 
 class ConvLSTMCell(nn.Module):
-    def __init__(self, shape, input_size, hidden_size, kernel_size, bias=True):
+    def __init__(self, shape, input_size, hidden_size, kernel_size, device, bias=True):
         """
 
         Initialize a Convolutional LSTM cell.
@@ -24,6 +25,7 @@ class ConvLSTMCell(nn.Module):
         self.hidden_size = hidden_size
         self.kernel_size = kernel_size
         self.bias = bias
+        self.device = device
         self.padding = (kernel_size - 1) // 2  # keep same size through in output
         self.bias = bias
         # explain trick
@@ -54,8 +56,8 @@ class ConvLSTMCell(nn.Module):
     def init_hidden(self, batch_size, image_size):
         height, width = image_size
         if self.Wci is None:
-            self.Wci = nn.Parameter(torch.zeros(1, height, width))
-            self.Wcf = nn.Parameter(torch.zeros(1, height, width))
-            self.Wco = nn.Parameter(torch.zeros(1, height, width))
-        return (torch.zeros(batch_size, self.hidden_size, height, width),
-                torch.zeros(batch_size, self.hidden_size, height, width))
+            self.Wci = nn.Parameter(torch.zeros(1, height, width)).to(self.device)
+            self.Wcf = nn.Parameter(torch.zeros(1, height, width)).to(self.device)
+            self.Wco = nn.Parameter(torch.zeros(1, height, width)).to(self.device)
+        return (Variable(torch.zeros(batch_size, self.hidden_size, height, width).to(self.device)),
+                Variable(torch.zeros(batch_size, self.hidden_size, height, width)).to(self.device))

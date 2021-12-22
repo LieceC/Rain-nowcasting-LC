@@ -1,4 +1,4 @@
-from src.Module.convlstmcell import *
+from src.Models.convlstmcell import *
 
 """
 Implémentation of the ConvLSTM architecture from this paper : https://arxiv.org/pdf/1506.04214.pdf
@@ -6,36 +6,41 @@ Implémentation of the ConvLSTM architecture from this paper : https://arxiv.org
 
 
 class ConvLSTM(nn.Module):
-    def __init__(self, input_shape, input_dim, hidden_dim, kernel_size, bias=True):
+    def __init__(self, input_shape, input_dim, hidden_dim, kernel_size, device, bias=True):
         super(ConvLSTM, self).__init__()
         self.input_shape = input_shape
         self.input_dim = input_dim
         self.hidden_dim = hidden_dim
         self.kernel_size = kernel_size
+        self.device = device
         self.nb_layers = 4
         self.lstmcell1 = ConvLSTMCell(shape=input_shape,
                                       input_size=input_dim,
                                       hidden_size=self.hidden_dim,
                                       kernel_size=self.kernel_size,
+                                      device=device,
                                       bias=bias)
         self.lstmcell2 = ConvLSTMCell(shape=input_shape,
                                       input_size=hidden_dim,
                                       hidden_size=self.hidden_dim,
                                       kernel_size=self.kernel_size,
+                                      device=device,
                                       bias=bias)
         self.lstmcell3 = ConvLSTMCell(shape=input_shape,
                                       input_size=hidden_dim,
                                       hidden_size=self.hidden_dim,
                                       kernel_size=self.kernel_size,
+                                      device=device,
                                       bias=bias)
         self.lstmcell4 = ConvLSTMCell(shape=input_shape,
                                       input_size=hidden_dim,
                                       hidden_size=self.input_dim,
                                       kernel_size=self.kernel_size,
+                                      device=device,
                                       bias=bias)
         self.cell_list = nn.ModuleList([self.lstmcell1, self.lstmcell2, self.lstmcell3, self.lstmcell4])
 
-    def forward(self, input, hidden_state=None):
+    def forward(self, input):
         hidden_state = self._init_hidden(batch_size=input.shape[0],
                                          image_size=self.input_shape)
         layer_output_list = []

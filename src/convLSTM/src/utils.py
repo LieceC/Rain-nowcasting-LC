@@ -1,24 +1,54 @@
-import os
+import numpy as np
 import torch
+from PIL import Image
+
 
 def get_date_from_file_name(filename):
-
     date_infos = [int(val[1:]) for val in filename.split('/')[-1].split('.')[0].split('-')]
     return date_infos
 
 
-def weighted_mse_loss(input, target):
+def filter_one_week_over_two_for_eval(idx):
+    samples_per_week = 12 * 24 * 7
+    return (idx // samples_per_week) % 2
 
-    threshold = [0, 2, 5, 10, 30, 1000]
-    weights = [1, 2, 5, 10, 30]
-    assert len(threshold) == len(weights) + 1
-    loss = torch.Tensor([0])
 
-    for k in range(len(weights)):
-        mask = ((threshold[k] <= target) & (target < threshold[k+1])).float()
-        loss += torch.sum(weights[k] * ((input*mask - target*mask)) ** 2)
+def missing_file_in_sequence(files_names):
+    for k in range(len(files_names) - 1):
+        month_1, day_1, hour_1, min_1 = get_date_from_file_name(files_names[k])[1:]
+        month_2, day_2, hour_2, min_2 = get_date_from_file_name(files_names[k + 1])[1:]
 
-    return loss
+        if (min_1 + 5) % 60 != min_2:
+            # print("Min gap : ", files_names, "\n")
+            return True
+        if (hour_1 + 1) % 24 != hour_2 and (min_1 == 55 and min_2 == 0):
+            # print("Hour gap : ", files_names, "\n")
+            return True
+        if day_1 != day_2 and day_1 + 1 != day_2 and not (
+                (day_1 == 30 and day_2 == 1) or (day_1 == 31 and day_2 == 1) or (
+                month_1 == 2 and (day_1 == 28 or day_1 == 29) and day_2 == 1)):
+            # print("Day gap : ", files_names, "\n")
+            return True
+
+    return False
+
+
+def save_gif(single_seq, fname):
+    """Save a single gif consisting of image sequence in single_seq to fname."""
+    img_seq = [Image.fromarray(img.astype(np.float32) * 255, 'F').convert("L") for img in single_seq]
+    img = img_seq[0]
+    img.save(fname, save_all=True, append_images=img_seq[1:])
+
+
+def save_gifs(seq, prefix):
+    """Save several gifs.
+    Args:
+      seq: Shape (num_gifs, IMG_SIZE, IMG_SIZE)
+      prefix: prefix-idx.gif will be the final filename.
+    """
+
+    for idx, single_seq in enumerate(seq):
+        save_gif(single_seq, "{}-{}.gif".format(prefix, idx))
 
 
 def tensorify(lst):

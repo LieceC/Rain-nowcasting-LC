@@ -1,6 +1,5 @@
 import torch
 import torch.nn as nn
-from torch.autograd import Variable
 
 
 class ConvLSTMCell(nn.Module):
@@ -35,29 +34,38 @@ class ConvLSTMCell(nn.Module):
                               padding=self.padding,
                               bias=self.bias)
 
-        self.Wci = None
-        self.Wcf = None
-        self.Wco = None
+        self.Wci = nn.Parameter(torch.zeros(1, self.hidden_size, shape[0], shape[1])).to(self.device)
+        self.Wcf = nn.Parameter(torch.zeros(1, self.hidden_size, shape[0], shape[1])).to(self.device)
+        self.Wco = nn.Parameter(torch.zeros(1, self.hidden_size, shape[0], shape[1])).to(self.device)
 
-    def forward(self, inputs=None, hidden_state=None):
-        h_cur, c_cur = hidden_state
-        input_comb = torch.cat((inputs, h_cur), dim=1)
-        input_comb = self.conv(input_comb)
+    def forward(self, inputs=None, states=None):
 
-        cc_i, cc_f, cc_o, cc_g = torch.split(input_comb, self.hidden_size, dim=1)
-        i = torch.sigmoid(cc_i + c_cur * self.Wci)
-        f = torch.sigmoid(cc_f + c_cur * self.Wcf)
-        c = f * c_cur + i * torch.tanh(cc_g)
-        o = torch.sigmoid(cc_o + self.Wco * c)
-        h = o * torch.tanh(c)
+        if states is None:
+            c = torch.zeros((inputs.size(0), self.hidden_size, self.shape[0],
+                             self.shape[1]), dtype=torch.float).to(self.device)
+            h = torch.zeros((inputs.size(0), self.hidden_size, self.shape[0],
+                             self.shape[1]), dtype=torch.float).to(self.device)
+        else:
+            h, c = states
 
-        return h, c
+        outputs = []
+        for index in range(inputs.size(1)):
+            # initial inputs
+            if inputs is None:
+                x = torch.zeros((h.size(0), self.input_size, self.shape[0],
+                                 self.shape[1]), dtype=torch.float).to(self.device)
+            else:
+                x = inputs[:, index, ...]
+            cat_x = torch.cat([x, h], dim=1)
+            conv_x = self.conv(cat_x)
 
-    def init_hidden(self, batch_size, image_size):
-        height, width = image_size
-        if self.Wci is None:
-            self.Wci = nn.Parameter(torch.zeros(1, height, width)).to(self.device)
-            self.Wcf = nn.Parameter(torch.zeros(1, height, width)).to(self.device)
-            self.Wco = nn.Parameter(torch.zeros(1, height, width)).to(self.device)
-        return (Variable(torch.zeros(batch_size, self.hidden_size, height, width).to(self.device)),
-                Variable(torch.zeros(batch_size, self.hidden_size, height, width)).to(self.device))
+            i, f, tmp_c, o = torch.chunk(conv_x, 4, dim=1)
+
+            i = torch.sigmoid(i)
+            f = torch.sigmoid(f)
+            o = torch.sigmoid(o)
+
+            c = f * c + i * torch.tanh(tmp_c)
+            h = o * torch.tanh(c)
+            outputs.append(h)
+        return torch.stack(outputs), h, c

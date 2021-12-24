@@ -5,12 +5,12 @@ from tqdm import tqdm
 from Models.ConvLSTM import ConvLSTM
 from dataset import MeteoDataset
 from eval import *
-from sampler import CustomSampler, indices_except_undefined_sampler
+from sampler import indices_except_undefined_sampler, CustomSampler
 from utils import *
 
 
-def trainer(input_shape=(128, 128), input_dim=1, hidden_dim=64, kernel_size=3, input_length=2, output_length=2,
-            batch_size=2, epochs=20):
+def trainer(input_shape=(128, 128), input_dim=1, hidden_dim=64, kernel_size=3, input_length=10, output_length=10,
+            batch_size=4, epochs=40):
     torch.manual_seed(1)
     board = SummaryWriter()
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -20,7 +20,6 @@ def trainer(input_shape=(128, 128), input_dim=1, hidden_dim=64, kernel_size=3, i
                    kernel_size=kernel_size,
                    device=device)
     net.to(device)
-
     train = MeteoDataset(rain_dir='../data/rainmap/train', input_length=input_length,
                          output_length=output_length, temporal_stride=input_length, dataset='train')
     train_sampler = CustomSampler(indices_except_undefined_sampler(train), train)
@@ -32,8 +31,8 @@ def trainer(input_shape=(128, 128), input_dim=1, hidden_dim=64, kernel_size=3, i
     train_dataloader = DataLoader(train, batch_size=batch_size, sampler=train_sampler)
     valid_dataloader = DataLoader(val, batch_size=batch_size, sampler=val_sampler)
 
-    optimizer = torch.optim.Adam(net.parameters(), lr=0.0008, betas=(0.9, 0.999), weight_decay=0.1)
-
+    optimizer = torch.optim.Adam(net.parameters(), lr=10e-4, betas=(0.9, 0.999), weight_decay=0.5)
+    criterion = torch.nn.MSELoss()
     avg_train_losses = []
     avg_val_losses = []
 
@@ -55,9 +54,9 @@ def trainer(input_shape=(128, 128), input_dim=1, hidden_dim=64, kernel_size=3, i
             inputs = inputs.to(device)
             targets = targets.to(device)
             optimizer.zero_grad()
-            pred = net(inputs)[0]
+            pred = net(inputs)
             mask = compute_weight_mask(targets)
-            loss = weighted_mse_loss(pred, targets, mask) + weighted_mae_loss(pred, targets, mask)
+            loss = 0.0005 * (weighted_mse_loss(pred, targets, mask) + weighted_mae_loss(pred, targets, mask))
             average_loss = loss.item() / batch_size
             train_losses.append(average_loss)
             loss.backward()
@@ -81,9 +80,9 @@ def trainer(input_shape=(128, 128), input_dim=1, hidden_dim=64, kernel_size=3, i
             inputs, targets = sample['input'], sample['target']
             inputs = inputs.to(device, dtype=torch.float32)
             targets = targets.to(device, dtype=torch.float32)
-            pred = net(inputs)[0]
+            pred = net(inputs)
             mask = compute_weight_mask(targets)
-            loss = weighted_mse_loss(pred, targets, mask) + weighted_mae_loss(pred, targets, mask)
+            loss = 0.0005 * (weighted_mse_loss(pred, targets, mask) + weighted_mae_loss(pred, targets, mask))
             average_loss = loss.item() / batch_size
             val_losses.append(average_loss)
             t.set_postfix({

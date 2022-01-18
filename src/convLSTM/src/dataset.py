@@ -39,8 +39,9 @@ class MeteoDataset(Dataset):
 
     def __getitem__(self, i):
 
+        idx = self.indices[i]
         files_names_i = self.files_names[
-                        self.temporal_stride * i: self.temporal_stride * i + self.input_length + self.output_length]
+                        self.temporal_stride * idx: self.temporal_stride * idx + self.input_length + self.output_length]
         path_files = [os.path.join(self.rain_dir, file_name) for file_name in files_names_i]
 
         # Create a sequence of input rain maps.
@@ -67,3 +68,4 @@ class MeteoDataset(Dataset):
             rain_sequence_target = torch.cat((rain_sequence_target, rain_map), 0)
 
         return {"input": rain_sequence_data, "target": rain_sequence_target}
+

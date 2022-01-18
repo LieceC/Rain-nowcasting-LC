@@ -1,7 +1,26 @@
+import os
+import glob
 import numpy as np
 import torch
 from PIL import Image
 
+def save_gif_2(single_seq, fname):
+    if len(single_seq.shape) == 4:
+        single_seq = single_seq.permute((0, 2, 3, 1))
+        single_seq = torch.squeeze(single_seq, -1)
+    single_seq = single_seq.cpu().detach().numpy()
+    single_seq_masked = rain_map_thresholded(single_seq)
+    img_seq = [Image.fromarray((img*255).astype(np.uint8), 'RGB') for img in single_seq_masked]
+    img = img_seq[0]
+    img.save(fname, save_all=True, append_images=img_seq[1:], duration=500, loop=0)
+
+
+def rain_map_thresholded(single_seq):
+    single_seq_masked = np.zeros((single_seq.shape[0], single_seq.shape[1], single_seq.shape[2], 3))
+    single_seq_masked[:, :, :, 1] = np.where((0.1 < single_seq) & (single_seq < 1.), 1., 0.)
+    single_seq_masked[:, :, :, 2] = np.where((1. < single_seq) & (single_seq < 2.5), 1., 0.)
+    single_seq_masked[:, :, :, 0] = np.where((2.5 < single_seq), 1., 0.)
+    return single_seq_masked
 
 def get_date_from_file_name(filename):
     date_infos = [int(val[1:]) for val in filename.split('/')[-1].split('.')[0].split('-')]
@@ -32,27 +51,43 @@ def missing_file_in_sequence(files_names):
 
     return False
 
+def create_dir(dir):
+  if not os.path.exists(dir):
+    os.makedirs(dir)
+    print("Created Directory : ", dir)
+  else:
+    files = glob.glob(dir+'/*')
+    for f in files:
+      os.remove(f)
+  return dir
 
-def save_gif(single_seq, fname):
+def save_gif(single_seq_pred, single_seq_gt, fname):
     """Save a single gif consisting of image sequence in single_seq to fname."""
+    create_dir(fname)
     # [S,I,H,W]
-    single_seq = torch.permute(single_seq, (0, 2, 3, 1))
+    single_seq = torch.permute(single_seq_pred, (0, 2, 3, 1))
     single_seq = torch.squeeze(single_seq, -1)
     single_seq = single_seq.cpu().detach().numpy()
     img_seq = [Image.fromarray(img.astype(np.float32) * 255, 'F').convert("L") for img in single_seq]
     img = img_seq[0]
-    img.save(fname, save_all=True, append_images=img_seq[1:])
+    img.save(fname+"/pred.gif", save_all=True, append_images=img_seq[1:])
+
+    single_seq = torch.permute(single_seq_gt, (0, 2, 3, 1))
+    single_seq = torch.squeeze(single_seq, -1)
+    single_seq = single_seq.cpu().detach().numpy()
+    img_seq = [Image.fromarray(img.astype(np.float32) * 255, 'F').convert("L") for img in single_seq]
+    img = img_seq[0]
+    img.save(fname+"/gt.gif", save_all=True, append_images=img_seq[1:])
 
 
-def save_gifs(seq, prefix):
+def save_gifs(seqpred, seqgt, prefix):
     """Save several gifs.
     Args:
       seq: Shape (num_gifs, IMG_SIZE, IMG_SIZE)
       prefix: prefix-idx.gif will be the final filename.
     """
-
-    for idx, single_seq in enumerate(seq):
-        save_gif(single_seq, "{}-{}.gif".format(prefix, idx))
+    for idx, (single_seq_pred, single_seq_gt) in enumerate(zip(seqpred, seqgt)):
+        save_gif(single_seq_pred, single_seq_gt, "{}-{}".format(prefix, idx))
 
 
 def tensorify(lst):
@@ -99,6 +134,6 @@ def compute_weight_mask(target):
 
     ### Fix for small gpu below
     return torch.where((0 <= target) & (target < 0.1), 1., 0.) \
-           + torch.where((0.1 <= target) & (target < 1), 2., 0.) \
-           + torch.where((1 <= target) & (target < 2.5), 4., 0.) \
-           + torch.where((2.5 <= target), 8., 0.)
+           + torch.where((0.1 <= target) & (target < 1), 1.2, 0.) \
+           + torch.where((1 <= target) & (target < 2.5), 1.5, 0.) \
+           + torch.where((2.5 <= target), 2., 0.)

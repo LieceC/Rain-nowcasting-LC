@@ -15,8 +15,7 @@ class CustomSampler(Sampler):
         alist : list
             Composed of True False for keep or reject position.
         """
-        self.__alist___ = alist
-        self.indices = [k for k in range(len(alist)) if alist[k]]
+        self.indices = alist
         self.dataset = dataset
 
     def __iter__(self):

@@ -9,11 +9,11 @@ from sampler import indices_except_undefined_sampler, CustomSampler
 from utils import *
 
 
-def trainer(input_shape=(128, 128), input_dim=1, hidden_dim=64, kernel_size=3, input_length=10, output_length=10,
-            batch_size=4, epochs=40):
+def trainer(input_shape=(128, 128), input_dim=1, hidden_dim=64, kernel_size=3, input_length=12, output_length=12,
+            batch_size=2, epochs=100):
     torch.manual_seed(1)
-    board = SummaryWriter()
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    board = SummaryWriter("runs/"+str(batch_size)+"_"+str(epochs)+"_lr"+str(10e-6)+"_weight_decay"+str(1e-7))
+    device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
     net = ConvLSTM(input_shape=input_shape,
                    input_dim=input_dim,
                    hidden_dim=hidden_dim,
@@ -31,8 +31,7 @@ def trainer(input_shape=(128, 128), input_dim=1, hidden_dim=64, kernel_size=3, i
     train_dataloader = DataLoader(train, batch_size=batch_size, sampler=train_sampler)
     valid_dataloader = DataLoader(val, batch_size=batch_size, sampler=val_sampler)
 
-    optimizer = torch.optim.Adam(net.parameters(), lr=10e-4, betas=(0.9, 0.999), weight_decay=0.5)
-    criterion = torch.nn.MSELoss()
+    optimizer = torch.optim.Adam(net.parameters(), lr=5*10e-6, betas=(0.9, 0.999), weight_decay=1e-7)
     avg_train_losses = []
     avg_val_losses = []
 
@@ -56,7 +55,7 @@ def trainer(input_shape=(128, 128), input_dim=1, hidden_dim=64, kernel_size=3, i
             optimizer.zero_grad()
             pred = net(inputs)
             mask = compute_weight_mask(targets)
-            loss = 0.0005 * (weighted_mse_loss(pred, targets, mask) + weighted_mae_loss(pred, targets, mask))
+            loss = 0.0005*(weighted_mse_loss(pred, targets, mask) + weighted_mae_loss(pred, targets, mask))
             average_loss = loss.item() / batch_size
             train_losses.append(average_loss)
             loss.backward()
@@ -66,7 +65,7 @@ def trainer(input_shape=(128, 128), input_dim=1, hidden_dim=64, kernel_size=3, i
                 'trainloss': '{:.6f}'.format(average_loss),
                 'epoch': '{:02d}'.format(epoch)
             })
-        save = "checkpoints/model_at_{}.pth".format(epoch)
+        save = "checkpoint/model12_at_{}.pth".format(epoch)
         state = {
             'epoch': epoch,
             'state_dict': net.state_dict(),
@@ -93,15 +92,23 @@ def trainer(input_shape=(128, 128), input_dim=1, hidden_dim=64, kernel_size=3, i
                 conf_mat_batch = compute_confusion(pred, targets, thresh)
                 confusion_matrix = add_confusion_matrix_on_batch(confusion_matrix, conf_mat_batch, thresh)
 
-        scores_evaluation = model_evaluation(confusion_matrix)
-        print("[Validation] metrics_scores : ", scores_evaluation)
-        avg_train_losses.append(np.average(train_losses))
-        avg_val_losses.append(np.average(val_losses))
-        board.add_scalar('TrainLoss', avg_train_losses[-1], epoch)
-        board.add_scalar('ValidLoss', avg_val_losses[-1], epoch)
+        if epoch > 4:
+             scores_evaluation = model_evaluation(confusion_matrix)
+             print("[Validation] metrics_scores : ", scores_evaluation)
+             avg_train_losses.append(np.average(train_losses))
+             avg_val_losses.append(np.average(val_losses))
+             board.add_scalar('TrainLoss', avg_train_losses[-1], epoch)
+             board.add_scalar('ValidLoss', avg_val_losses[-1], epoch)
+             for thresh_key in scores_evaluation:
+                 for metric_key in scores_evaluation[thresh_key]:
+                     for time_step in scores_evaluation[thresh_key][metric_key]:
+                         board.add_scalar(metric_key + "_" + thresh_key + "_time_step_" + time_step,
+                                        scores_evaluation[thresh_key][metric_key][time_step],
+                                        epoch)
 
     return net, avg_train_losses, avg_val_losses
 
 
 if __name__ == '__main__':
     net, _, _ = trainer()
+

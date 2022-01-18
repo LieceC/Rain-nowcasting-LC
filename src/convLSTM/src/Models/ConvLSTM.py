@@ -1,6 +1,8 @@
+import torch
 import torch.nn.functional as F
+from torch import nn
 
-from src.Models.convlstmcell import *
+from src.Models.convlstmcell import ConvLSTMCell
 
 """
 Implémentation of the ConvLSTM architecture from this paper : https://arxiv.org/pdf/1506.04214.pdf
@@ -58,9 +60,10 @@ class ConvLSTM(nn.Module):
         outputs, _, _ = self.decoding1(inputs=outputs, states=(h1, c1))
         outputs, _, _ = self.decoding2(inputs=outputs, states=(h2, c2))
 
-        layer_output_list = torch.squeeze(outputs, 0)
+        layer_output_list = outputs
         layer_output_list = torch.permute(layer_output_list, (0, 2, 1, 3, 4))
         layer_output_list = F.relu(self.out_conv1(layer_output_list))
         layer_output_list = F.relu(self.out_conv2(layer_output_list))
         layer_output_list = torch.permute(layer_output_list, (0, 2, 1, 3, 4))
         return layer_output_list
+

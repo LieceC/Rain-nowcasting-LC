@@ -4,14 +4,14 @@ from tqdm import tqdm
 from Models.ConvLSTM import ConvLSTM
 from dataset import MeteoDataset
 from eval import *
-from src.sampler import CustomSampler, indices_except_undefined_sampler
+from sampler import CustomSampler, indices_except_undefined_sampler
 from utils import *
 
 
-def eval(input_shape=(128, 128), input_dim=1, hidden_dim=64, kernel_size=3, input_length=2, output_length=2,
+def eval(input_shape=(128, 128), input_dim=1, hidden_dim=64, kernel_size=3, input_length=12, output_length=12,
          batch_size=2):
     torch.manual_seed(1)
-    # checkpoint = torch.load("checkpoints/model_at_epoch1.pth")
+    checkpoint = torch.load("checkpoint/model12_at_80.pth", map_location=torch.device('cuda'))
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     net = ConvLSTM(input_shape=input_shape,
                    input_dim=input_dim,
@@ -19,7 +19,7 @@ def eval(input_shape=(128, 128), input_dim=1, hidden_dim=64, kernel_size=3, inpu
                    kernel_size=kernel_size,
                    device=device)
     net.to(device)
-    # net.load_state_dict(checkpoint['state_dict'])
+    net.load_state_dict(checkpoint['state_dict'])
     net.eval()
     val = MeteoDataset(rain_dir='../data/rainmap/val', input_length=input_length,
                        output_length=output_length, temporal_stride=input_length, dataset='valid')
@@ -27,7 +27,7 @@ def eval(input_shape=(128, 128), input_dim=1, hidden_dim=64, kernel_size=3, inpu
     valid_dataloader = DataLoader(val, batch_size=batch_size, sampler=val_sampler)
 
     thresholds_in_mmh = [0.1, 1, 2.5]  # CRF over 1h
-
+    index_plot = 0
     confusion_matrix = {}
     for thresh in thresholds_in_mmh:
         confusion_matrix[str(thresh)] = {'TP': [0] * output_length,
@@ -39,7 +39,7 @@ def eval(input_shape=(128, 128), input_dim=1, hidden_dim=64, kernel_size=3, inpu
         inputs, targets = sample['input'], sample['target']
         inputs = inputs.to(device, dtype=torch.float32)
         targets = targets.to(device, dtype=torch.float32)
-        pred = net(inputs)[0]
+        pred = net(inputs)
         mask = compute_weight_mask(targets)
         loss = weighted_mse_loss(pred, targets, mask) + weighted_mae_loss(pred, targets, mask)
         average_loss = loss.item() / batch_size
@@ -50,6 +50,10 @@ def eval(input_shape=(128, 128), input_dim=1, hidden_dim=64, kernel_size=3, inpu
         for thresh in thresholds_in_mmh:
             conf_mat_batch = compute_confusion(pred, targets, thresh)
             confusion_matrix = add_confusion_matrix_on_batch(confusion_matrix, conf_mat_batch, thresh)
+        for k in range(inputs.shape[0]):
+            save_gif_2(pred[k], 'images/{}_pred.gif'.format(index_plot))
+            save_gif_2(targets[k], 'images/{}_target.gif'.format(index_plot))
+            index_plot += 1
 
     scores_evaluation = model_evaluation(confusion_matrix)
     print("[Validation] metrics_scores : ", scores_evaluation)

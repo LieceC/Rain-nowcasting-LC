@@ -24,9 +24,9 @@ def model_evaluation(confusion_matrix):
         scores[thresh_key]['bias'] = {}
         for time_step in range(len(confusion_matrix[thresh_key]['TP'])):
             scores[thresh_key]['f1']["t+" + str(time_step + 1)] = compute_f1_score(confusion_matrix[thresh_key],
-                                                                                         time_step)
+                                                                                   time_step)
             scores[thresh_key]['ts']["t+" + str(time_step + 1)] = compute_ts_score(confusion_matrix[thresh_key],
-                                                                                         time_step)
+                                                                                   time_step)
             scores[thresh_key]['bias']["t+" + str(time_step + 1)] = compute_bias_score(
                 confusion_matrix[thresh_key], time_step)
     return scores
@@ -55,4 +55,3 @@ def compute_bias_score(conf_mat, time_step):
             conf_mat['TP'][time_step] + conf_mat['FN'][time_step])
 
     return round(metric_score, 3)
-

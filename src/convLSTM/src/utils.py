@@ -1,10 +1,12 @@
-import os
 import glob
+import os
+
+import matplotlib.pyplot as plt
 import numpy as np
 import torch
-from tqdm import tqdm
 from PIL import Image
-import matplotlib.pyplot as plt
+from tqdm import tqdm
+
 
 def save_gif_2(single_seq, fname):
     if len(single_seq.shape) == 4:
@@ -12,12 +14,12 @@ def save_gif_2(single_seq, fname):
         single_seq = torch.squeeze(single_seq, -1)
     single_seq = single_seq.cpu().detach().numpy()
     single_seq_masked = rain_map_thresholded(single_seq)
-    img_seq = [Image.fromarray((img*255).astype(np.uint8), 'RGB') for img in single_seq_masked]
+    img_seq = [Image.fromarray((img * 255).astype(np.uint8), 'RGB') for img in single_seq_masked]
     img = img_seq[0]
     img.save(fname, save_all=True, append_images=img_seq[1:], duration=500, loop=0)
 
-def filter_year(filename, dataset):
 
+def filter_year(filename, dataset):
     date_infos = get_date_from_file_name(filename)
     year = date_infos[0]
 
@@ -28,12 +30,10 @@ def filter_year(filename, dataset):
 
 
 def keep_wind_when_rainmap_exists(rainmap_list, U_wind_list, V_wind_list):
-
     rain_map_new_L, U_wind_new_L, V_wind_new_L = [], [], []
 
     for k in tqdm(range(len(rainmap_list))):
         if rainmap_list[k] in U_wind_list and rainmap_list[k] in V_wind_list:
-
             # All repertories have the same file names.
             rain_map_new_L.append(rainmap_list[k])
             U_wind_new_L.append(rainmap_list[k])
@@ -41,8 +41,8 @@ def keep_wind_when_rainmap_exists(rainmap_list, U_wind_list, V_wind_list):
 
     return rain_map_new_L, U_wind_new_L, V_wind_new_L
 
-def plot_output_gt_colored(output, target, input, index, output_dir):
 
+def plot_output_gt_colored(output, target, input, index, output_dir):
     output = output.cpu().detach().numpy()
     target = target.cpu().detach().numpy()
     input = input.cpu().detach().numpy()
@@ -56,21 +56,20 @@ def plot_output_gt_colored(output, target, input, index, output_dir):
     target = rain_map_thresholded(target)
     input = rain_map_thresholded(input)
 
-    output = [Image.fromarray((img*255).astype(np.uint8), 'RGB') for img in output]
-    target = [Image.fromarray((img*255).astype(np.uint8), 'RGB') for img in target]
-    input = [Image.fromarray((img*255).astype(np.uint8), 'RGB') for img in input]
-
+    output = [Image.fromarray((img * 255).astype(np.uint8), 'RGB') for img in output]
+    target = [Image.fromarray((img * 255).astype(np.uint8), 'RGB') for img in target]
+    input = [Image.fromarray((img * 255).astype(np.uint8), 'RGB') for img in input]
 
     fig, axs = plt.subplots(3, 5, figsize=(15, 9))
     for k in range(5):
-        im = axs[0][k].imshow(input[7+k])
-        axs[0][k].title.set_text('Input at t - {}'.format(5*(4-k)))
+        im = axs[0][k].imshow(input[7 + k])
+        axs[0][k].title.set_text('Input at t - {}'.format(5 * (4 - k)))
 
     for k in range(5):
-        axs[1][k].imshow(output[2*k])
-        axs[2][k].imshow(target[2*k])
-        axs[1][k].title.set_text('Pred at t + {}'.format(5*(2*k+2)))
-        axs[2][k].title.set_text('GT at t + {}'.format(5*(2*k+2)))
+        axs[1][k].imshow(output[2 * k])
+        axs[2][k].imshow(target[2 * k])
+        axs[1][k].title.set_text('Pred at t + {}'.format(5 * (2 * k + 2)))
+        axs[2][k].title.set_text('GT at t + {}'.format(5 * (2 * k + 2)))
 
     fig.subplots_adjust(right=0.8)
     cbar_ax = fig.add_axes([0.85, 0.15, 0.05, 0.7])
@@ -78,41 +77,8 @@ def plot_output_gt_colored(output, target, input, index, output_dir):
 
     plt.savefig(output_dir + str(index))
 
-def plot_output_gt_gray(output, target, input, index, output_dir):
-
-    output = output.cpu().detach().numpy()
-    target = target.cpu().detach().numpy()
-    input = input.cpu().detach().numpy()
-
-    if len(target.shape) == 4:
-        output = output.squeeze(1)
-        target = target.squeeze(1)
-        input = input.squeeze(1)
-
-
-    min_value = min(np.min(output), np.min(input[7:]), np.min(target))
-    max_value = max(np.max(output), np.max(input[7:]), np.max(target))
-
-    fig, axs = plt.subplots(3, 5, figsize=(15, 9))
-    for k in range(5):
-        im = axs[0][k].imshow(input[7+k], cmap='gray', vmin=min_value, vmax=max_value)
-        axs[0][k].title.set_text('Input at t - {}'.format(5*(4-k)))
-
-    for k in range(5):
-        axs[1][k].imshow(output[2*k], cmap='gray', vmin=min_value, vmax=max_value)
-        axs[2][k].imshow(target[2*k], cmap='gray', vmin=min_value, vmax=max_value)
-        axs[1][k].title.set_text('Pred at t + {}'.format(5*(2*k+2)))
-        axs[2][k].title.set_text('GT at t + {}'.format(5*(2*k+2)))
-
-    fig.subplots_adjust(right=0.8)
-    cbar_ax = fig.add_axes([0.85, 0.15, 0.05, 0.7])
-
-    fig.colorbar(im, cax=cbar_ax)
-
-    plt.savefig(output_dir + str(index))
 
 def sanity_check(rain_files_names, U_wind_files_names, V_wind_files_names):
-
     """if not (len(rain_files_names) == len(U_wind_files_names) and len(rain_files_names) == len(V_wind_files_names)):
          print("Error : dimension mismatch")
          return"""
@@ -133,12 +99,14 @@ def sanity_check(rain_files_names, U_wind_files_names, V_wind_files_names):
             print(V_wind_files_names[k])
             return
 
+
 def rain_map_thresholded(single_seq):
     single_seq_masked = np.zeros((single_seq.shape[0], single_seq.shape[1], single_seq.shape[2], 3))
     single_seq_masked[:, :, :, 1] = np.where((0.1 < single_seq) & (single_seq < 1.), 1., 0.)
     single_seq_masked[:, :, :, 2] = np.where((1. < single_seq) & (single_seq < 2.5), 1., 0.)
     single_seq_masked[:, :, :, 0] = np.where((2.5 < single_seq), 1., 0.)
     return single_seq_masked
+
 
 def get_date_from_file_name(filename):
     date_infos = [int(val[1:]) for val in filename.split('/')[-1].split('.')[0].split('-')]
@@ -169,67 +137,16 @@ def missing_file_in_sequence(files_names):
 
     return False
 
+
 def create_dir(dir):
-  if not os.path.exists(dir):
-    os.makedirs(dir)
-    print("Created Directory : ", dir)
-  else:
-    files = glob.glob(dir+'/*')
-    for f in files:
-      os.remove(f)
-  return dir
-
-def save_gif(single_seq_pred, single_seq_gt, fname):
-    """Save a single gif consisting of image sequence in single_seq to fname."""
-    create_dir(fname)
-    # [S,I,H,W]
-    single_seq = torch.permute(single_seq_pred, (0, 2, 3, 1))
-    single_seq = torch.squeeze(single_seq, -1)
-    single_seq = single_seq.cpu().detach().numpy()
-    img_seq = [Image.fromarray(img.astype(np.float32) * 255, 'F').convert("L") for img in single_seq]
-    img = img_seq[0]
-    img.save(fname+"/pred.gif", save_all=True, append_images=img_seq[1:])
-
-    single_seq = torch.permute(single_seq_gt, (0, 2, 3, 1))
-    single_seq = torch.squeeze(single_seq, -1)
-    single_seq = single_seq.cpu().detach().numpy()
-    img_seq = [Image.fromarray(img.astype(np.float32) * 255, 'F').convert("L") for img in single_seq]
-    img = img_seq[0]
-    img.save(fname+"/gt.gif", save_all=True, append_images=img_seq[1:])
-
-
-def save_gifs(seqpred, seqgt, prefix):
-    """Save several gifs.
-    Args:
-      seq: Shape (num_gifs, IMG_SIZE, IMG_SIZE)
-      prefix: prefix-idx.gif will be the final filename.
-    """
-    for idx, (single_seq_pred, single_seq_gt) in enumerate(zip(seqpred, seqgt)):
-        save_gif(single_seq_pred, single_seq_gt, "{}-{}".format(prefix, idx))
-
-
-def tensorify(lst):
-    """
-    List must be nested list of tensors (with no varying lengths within a dimension).
-    Nested list of nested lengths [D1, D2, ... DN] -> tensor([D1, D2, ..., DN)
-
-    :return: nested list D
-    """
-    # base case, if the current list is not nested anymore, make it into tensor
-    if type(lst[0]) != list:
-        if type(lst) == torch.Tensor:
-            return lst
-        elif type(lst[0]) == torch.Tensor:
-            return torch.stack(lst, dim=0)
-        else:  # if the elements of lst are floats or something like that
-            return torch.tensor(lst)
-    current_dimension_i = len(lst)
-    for d_i in range(current_dimension_i):
-        tensor = tensorify(lst[d_i])
-        lst[d_i] = tensor
-    # end of loop lst[d_i] = tensor([D_i, ... D_0])
-    tensor_lst = torch.stack(lst, dim=0)
-    return tensor_lst
+    if not os.path.exists(dir):
+        os.makedirs(dir)
+        print("Created Directory : ", dir)
+    else:
+        files = glob.glob(dir + '/*')
+        for f in files:
+            os.remove(f)
+    return dir
 
 
 def weighted_mse_loss(output, target, weight_mask):

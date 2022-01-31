@@ -2,7 +2,9 @@ import os
 import glob
 import numpy as np
 import torch
+from tqdm import tqdm
 from PIL import Image
+import matplotlib.pyplot as plt
 
 def save_gif_2(single_seq, fname):
     if len(single_seq.shape) == 4:
@@ -14,6 +16,122 @@ def save_gif_2(single_seq, fname):
     img = img_seq[0]
     img.save(fname, save_all=True, append_images=img_seq[1:], duration=500, loop=0)
 
+def filter_year(filename, dataset):
+
+    date_infos = get_date_from_file_name(filename)
+    year = date_infos[0]
+
+    if dataset == 'train':
+        return year == 2016 or year == 2017
+    elif dataset == 'valid' or dataset == 'test':
+        return year == 2018
+
+
+def keep_wind_when_rainmap_exists(rainmap_list, U_wind_list, V_wind_list):
+
+    rain_map_new_L, U_wind_new_L, V_wind_new_L = [], [], []
+
+    for k in tqdm(range(len(rainmap_list))):
+        if rainmap_list[k] in U_wind_list and rainmap_list[k] in V_wind_list:
+
+            # All repertories have the same file names.
+            rain_map_new_L.append(rainmap_list[k])
+            U_wind_new_L.append(rainmap_list[k])
+            V_wind_new_L.append(rainmap_list[k])
+
+    return rain_map_new_L, U_wind_new_L, V_wind_new_L
+
+def plot_output_gt_colored(output, target, input, index, output_dir):
+
+    output = output.cpu().detach().numpy()
+    target = target.cpu().detach().numpy()
+    input = input.cpu().detach().numpy()
+
+    if len(target.shape) == 4:
+        output = output.squeeze(1)
+        target = target.squeeze(1)
+        input = input.squeeze(1)
+
+    output = rain_map_thresholded(output)
+    target = rain_map_thresholded(target)
+    input = rain_map_thresholded(input)
+
+    output = [Image.fromarray((img*255).astype(np.uint8), 'RGB') for img in output]
+    target = [Image.fromarray((img*255).astype(np.uint8), 'RGB') for img in target]
+    input = [Image.fromarray((img*255).astype(np.uint8), 'RGB') for img in input]
+
+
+    fig, axs = plt.subplots(3, 5, figsize=(15, 9))
+    for k in range(5):
+        im = axs[0][k].imshow(input[7+k])
+        axs[0][k].title.set_text('Input at t - {}'.format(5*(4-k)))
+
+    for k in range(5):
+        axs[1][k].imshow(output[2*k])
+        axs[2][k].imshow(target[2*k])
+        axs[1][k].title.set_text('Pred at t + {}'.format(5*(2*k+2)))
+        axs[2][k].title.set_text('GT at t + {}'.format(5*(2*k+2)))
+
+    fig.subplots_adjust(right=0.8)
+    cbar_ax = fig.add_axes([0.85, 0.15, 0.05, 0.7])
+    fig.colorbar(im, cax=cbar_ax)
+
+    plt.savefig(output_dir + str(index))
+
+def plot_output_gt_gray(output, target, input, index, output_dir):
+
+    output = output.cpu().detach().numpy()
+    target = target.cpu().detach().numpy()
+    input = input.cpu().detach().numpy()
+
+    if len(target.shape) == 4:
+        output = output.squeeze(1)
+        target = target.squeeze(1)
+        input = input.squeeze(1)
+
+
+    min_value = min(np.min(output), np.min(input[7:]), np.min(target))
+    max_value = max(np.max(output), np.max(input[7:]), np.max(target))
+
+    fig, axs = plt.subplots(3, 5, figsize=(15, 9))
+    for k in range(5):
+        im = axs[0][k].imshow(input[7+k], cmap='gray', vmin=min_value, vmax=max_value)
+        axs[0][k].title.set_text('Input at t - {}'.format(5*(4-k)))
+
+    for k in range(5):
+        axs[1][k].imshow(output[2*k], cmap='gray', vmin=min_value, vmax=max_value)
+        axs[2][k].imshow(target[2*k], cmap='gray', vmin=min_value, vmax=max_value)
+        axs[1][k].title.set_text('Pred at t + {}'.format(5*(2*k+2)))
+        axs[2][k].title.set_text('GT at t + {}'.format(5*(2*k+2)))
+
+    fig.subplots_adjust(right=0.8)
+    cbar_ax = fig.add_axes([0.85, 0.15, 0.05, 0.7])
+
+    fig.colorbar(im, cax=cbar_ax)
+
+    plt.savefig(output_dir + str(index))
+
+def sanity_check(rain_files_names, U_wind_files_names, V_wind_files_names):
+
+    """if not (len(rain_files_names) == len(U_wind_files_names) and len(rain_files_names) == len(V_wind_files_names)):
+         print("Error : dimension mismatch")
+         return"""
+
+    print(len(rain_files_names))
+    print(len(U_wind_files_names))
+    print(len(V_wind_files_names))
+
+    for k in range(len(rain_files_names)):
+        date_infos_rain = get_date_from_file_name(rain_files_names[k])
+        U_wind_infos_rain = get_date_from_file_name(U_wind_files_names[k])
+        V_wind_infos_rain = get_date_from_file_name(V_wind_files_names[k])
+
+        if not (date_infos_rain == U_wind_infos_rain and date_infos_rain == V_wind_infos_rain):
+            print("Error")
+            print(rain_files_names[k])
+            print(U_wind_files_names[k])
+            print(V_wind_files_names[k])
+            return
 
 def rain_map_thresholded(single_seq):
     single_seq_masked = np.zeros((single_seq.shape[0], single_seq.shape[1], single_seq.shape[2], 3))
@@ -134,6 +252,6 @@ def compute_weight_mask(target):
 
     ### Fix for small gpu below
     return torch.where((0 <= target) & (target < 0.1), 1., 0.) \
-           + torch.where((0.1 <= target) & (target < 1), 1.2, 0.) \
-           + torch.where((1 <= target) & (target < 2.5), 1.5, 0.) \
-           + torch.where((2.5 <= target), 2., 0.)
+           + torch.where((0.1 <= target) & (target < 1), 2., 0.) \
+           + torch.where((1 <= target) & (target < 2.5), 3., 0.) \
+           + torch.where((2.5 <= target), 4., 0.)

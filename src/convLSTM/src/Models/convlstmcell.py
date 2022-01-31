@@ -34,10 +34,6 @@ class ConvLSTMCell(nn.Module):
                               padding=self.padding,
                               bias=self.bias)
 
-        self.Wci = nn.Parameter(torch.zeros(1, self.hidden_size, shape[0], shape[1])).to(self.device)
-        self.Wcf = nn.Parameter(torch.zeros(1, self.hidden_size, shape[0], shape[1])).to(self.device)
-        self.Wco = nn.Parameter(torch.zeros(1, self.hidden_size, shape[0], shape[1])).to(self.device)
-
     def forward(self, inputs=None, states=None):
 
         if states is None:
@@ -68,4 +64,4 @@ class ConvLSTMCell(nn.Module):
             c = f * c + i * torch.tanh(tmp_c)
             h = o * torch.tanh(c)
             outputs.append(h)
-        return torch.stack(outputs), h, c
+        return torch.stack(outputs, dim=1), h, c

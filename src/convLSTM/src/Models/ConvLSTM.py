@@ -1,8 +1,7 @@
 import torch
 import torch.nn.functional as F
-from torch import nn
 
-from src.Models.convlstmcell import ConvLSTMCell
+from Models.convlstmcell import *
 
 """
 Implémentation of the ConvLSTM architecture from this paper : https://arxiv.org/pdf/1506.04214.pdf
@@ -10,10 +9,11 @@ Implémentation of the ConvLSTM architecture from this paper : https://arxiv.org
 
 
 class ConvLSTM(nn.Module):
-    def __init__(self, input_shape, input_dim, hidden_dim, kernel_size, device, bias=True):
+    def __init__(self, input_shape, input_dim, output_dim, hidden_dim, kernel_size, device, bias=True):
         super(ConvLSTM, self).__init__()
         self.input_shape = input_shape
         self.input_dim = input_dim
+        self.output_dim = output_dim
         self.hidden_dim = hidden_dim
         self.kernel_size = kernel_size
         self.device = device
@@ -49,7 +49,7 @@ class ConvLSTM(nn.Module):
                                    padding=0,
                                    bias=bias)
         self.out_conv2 = nn.Conv3d(in_channels=self.hidden_dim // 4,
-                                   out_channels=self.input_dim,
+                                   out_channels=self.output_dim,
                                    kernel_size=1,
                                    padding=0,
                                    bias=bias)

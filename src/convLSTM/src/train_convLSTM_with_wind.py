@@ -9,12 +9,12 @@ from sampler import indices_except_undefined_sampler, CustomSampler
 from utils import *
 
 
-def trainer(input_shape=(128, 128), input_dim=1, hidden_dim=64, kernel_size=3, input_length=12, output_length=12,
+def trainer(input_shape=(128, 128), input_dim=3, hidden_dim=64, kernel_size=3, input_length=12, output_length=12,
             batch_size=2, epochs=100):
     torch.manual_seed(1)
     board = SummaryWriter(
-        "runs/fix2" + str(batch_size) + "_" + str(epochs) + "_lr" + str(10e-5) + "_weight_decay" + str(1e-5))
-    device = torch.device('cuda:2' if torch.cuda.is_available() else 'cpu')
+        "runs/wind_fix" + str(batch_size) + "_" + str(epochs) + "_lr_10e-4" + "_weight_decay" + str(1e-6))
+    device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
     net = ConvLSTM(input_shape=input_shape,
                    input_dim=input_dim,
                    output_dim=1,
@@ -23,7 +23,7 @@ def trainer(input_shape=(128, 128), input_dim=1, hidden_dim=64, kernel_size=3, i
                    device=device)
     net.to(device)
     train = MeteoDataset(rain_dir='../PRAT21/data/rainmap/train',
-                         wind_dir=None,
+                         wind_dir='../PRAT21/data/wind',
                          input_length=input_length,
                          output_length=output_length,
                          temporal_stride=input_length,
@@ -32,17 +32,18 @@ def trainer(input_shape=(128, 128), input_dim=1, hidden_dim=64, kernel_size=3, i
     train_sampler = CustomSampler(indices_except_undefined_sampler(train), train)
 
     val = MeteoDataset(rain_dir='../PRAT21/data/rainmap/val',
-                       wind_dir=None,
+                       wind_dir='../PRAT21/data/wind',
                        input_length=input_length,
                        output_length=output_length,
                        temporal_stride=input_length,
                        dataset='valid',
                        recurrent_nn=True)
     val_sampler = CustomSampler(indices_except_undefined_sampler(val), val)
+
     train_dataloader = DataLoader(train, batch_size=batch_size, sampler=train_sampler)
     valid_dataloader = DataLoader(val, batch_size=batch_size, sampler=val_sampler)
 
-    optimizer = torch.optim.Adam(net.parameters(), lr=10e-6, betas=(0.9, 0.999), weight_decay=1e-7)
+    optimizer = torch.optim.Adam(net.parameters(), lr=10e-4, betas=(0.9, 0.999), weight_decay=1e-7)
     avg_train_losses = []
     avg_val_losses = []
 
@@ -76,7 +77,7 @@ def trainer(input_shape=(128, 128), input_dim=1, hidden_dim=64, kernel_size=3, i
                 'trainloss': '{:.6f}'.format(average_loss),
                 'epoch': '{:02d}'.format(epoch)
             })
-        save = "checkpoint/test_fix2_at_{}.pth".format(epoch)
+        save = "checkpoint/wind_fix_model3_at_{}.pth".format(epoch)
         state = {
             'epoch': epoch,
             'state_dict': net.state_dict(),
@@ -103,7 +104,7 @@ def trainer(input_shape=(128, 128), input_dim=1, hidden_dim=64, kernel_size=3, i
                 conf_mat_batch = compute_confusion(pred, targets, thresh)
                 confusion_matrix = add_confusion_matrix_on_batch(confusion_matrix, conf_mat_batch, thresh)
 
-        if epoch > 4:
+        if epoch > 20:
             scores_evaluation = model_evaluation(confusion_matrix)
             print("[Validation] metrics_scores : ", scores_evaluation)
             avg_train_losses.append(np.average(train_losses))

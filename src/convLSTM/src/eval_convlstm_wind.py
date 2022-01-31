@@ -8,10 +8,10 @@ from sampler import CustomSampler, indices_except_undefined_sampler
 from utils import *
 
 
-def eval(input_shape=(128, 128), input_dim=1, hidden_dim=64, kernel_size=3, input_length=12, output_length=12,
+def eval(input_shape=(128, 128), input_dim=3, hidden_dim=64, kernel_size=3, input_length=12, output_length=12,
          batch_size=2):
     torch.manual_seed(1)
-    checkpoint = torch.load("checkpoint/test_fix2_model12_at_40.pth", map_location=torch.device('cuda'))
+    checkpoint = torch.load("checkpoint/wind_model1_at_61.pth", map_location=torch.device('cuda'))
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     net = ConvLSTM(input_shape=input_shape,
                    input_dim=input_dim,
@@ -23,7 +23,7 @@ def eval(input_shape=(128, 128), input_dim=1, hidden_dim=64, kernel_size=3, inpu
     net.load_state_dict(checkpoint['state_dict'])
     net.eval()
     val = MeteoDataset(rain_dir='../PRAT21/data/rainmap/val',
-                        wind_dir=None,
+                        wind_dir='../PRAT21/data/wind',
                         input_length=input_length,
                         output_length=output_length,
                         temporal_stride=input_length,
@@ -57,10 +57,12 @@ def eval(input_shape=(128, 128), input_dim=1, hidden_dim=64, kernel_size=3, inpu
             conf_mat_batch = compute_confusion(pred, targets, thresh)
             confusion_matrix = add_confusion_matrix_on_batch(confusion_matrix, conf_mat_batch, thresh)
         for k in range(inputs.shape[0]):
-            #save_gif_2(pred[k], 'images/{}_pred.gif'.format(index_plot))
-            #save_gif_2(targets[k], 'images/{}_target.gif'.format(index_plot))
-            #plot_output_gt_gray(pred[k],targets[k],inputs[k],index_plot,'images/plot_pred_targets')
-            plot_output_gt_colored(pred[k],targets[k],inputs[k],index_plot,'images/plot_pred_targets')
+            save_gif_2(pred[k], 'images/{}_pred.gif'.format(index_plot))
+            save_gif_2(targets[k], 'images/{}_target.gif'.format(index_plot))
+            #print(inputs[k,:,0,...].unsqueeze(2).size())
+            #print(inputs[k,:,0,...].size())
+            plot_output_gt_gray(pred[k],targets[k],inputs[k,:,0,...].unsqueeze(1),index_plot,'images/plot_pred_targets')
+            plot_output_gt_colored(pred[k],targets[k],inputs[k,:,0,...].unsqueeze(1),index_plot,'images/plot_pred_targets')
             index_plot += 1
 
     scores_evaluation = model_evaluation(confusion_matrix)

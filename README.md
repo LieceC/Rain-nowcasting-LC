@@ -21,7 +21,7 @@ Parameters are defined in `train_convLSTM_with_wind.py`, checkpoints will be sav
 You can change parameters at line 14 and 15 for the learning rate and weight decay, for the batch size you can set it
 in the call function located in the main.
 
-The models saves their differents metrics after some steps in a runs folder, letting use analyse the evolution of our
+The models saves their differents metrics after some steps in a runs folder, lets use analyse the evolution of our
 training through tensorboard.
 
 ## 2. Test the model

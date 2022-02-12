@@ -17,12 +17,12 @@ We can change the learning rate et weight decay of the network in the file `trai
 To train the model with wind use the command :
 `$ python3 train_convLSTM_with_wind.py`
 
-Parameters are defined in `train_convLSTM_with_wind.py`, checkpoints will be saved in "src/checkpoints" folder at each iteration
+Parameters are defined in `train_convLSTM_with_wind.py`, checkpoints will be saved in "src/checkpoints" folder at each iteration.
 You can change parameters at line 14 and 15 for the learning rate and weight decay, for the batch size you can set it
 in the call function located in the main.
 
 The models saved their differents metrics after some steps in a runs folder, letting use analyse the evolution of our
-training through tensorboard
+training through tensorboard.
 
 ## 2. Test the model
 

@@ -1,5 +1,3 @@
-import argparse
-
 from torch.utils.data import DataLoader
 from torch.utils.tensorboard import SummaryWriter
 
@@ -13,13 +11,12 @@ from utils import *
 def trainer(input_shape=(128, 128), input_dim=3, hidden_dim=64, kernel_size=3, input_length=12, output_length=12,
             batch_size=2, epochs=100):
     torch.manual_seed(1)
-    weight_decay = 10e-7
-    learning_rate = 10e-5
+    learning_rate = 10e-4
+    weight_decay = 1e-7
     board = SummaryWriter(
-        "runs/wind_batch_" + str(batch_size) + "_epochs_" + str(epochs) + "_lr" + str(
-            learning_rate) + "_weight_decay" + str(
+        "runs/wind" + str(batch_size) + "_" + str(epochs) + "_lr" + str(learning_rate) + "_weight_decay" + str(
             weight_decay))
-    device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     net = ConvLSTM(input_shape=input_shape,
                    input_dim=input_dim,
                    output_dim=1,
@@ -48,7 +45,7 @@ def trainer(input_shape=(128, 128), input_dim=3, hidden_dim=64, kernel_size=3, i
     train_dataloader = DataLoader(train, batch_size=batch_size, sampler=train_sampler)
     valid_dataloader = DataLoader(val, batch_size=batch_size, sampler=val_sampler)
 
-    optimizer = torch.optim.Adam(net.parameters(), lr=learning_rate, betas=(0.9, 0.999), weight_decay=weight_decay)
+    optimizer = torch.optim.Adam(net.parameters(), lr=learning_rate, betas=(0.9, 0.999), weight_decay=1e-7)
     avg_train_losses = []
     avg_val_losses = []
 
@@ -134,19 +131,4 @@ def trainer(input_shape=(128, 128), input_dim=3, hidden_dim=64, kernel_size=3, i
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--epochs', default=100, type=int, help="Number of epochs to train")
-    parser.add_argument('--batch_size', default=2, type=int, help="The batch size")
-    parser.add_argument('--length', type=int, default=5,
-                        help="The number of time steps predicted by the NN, must be equal to the number of time steps in input")
-    parser.add_argument('--hidden_dim', default=64, type=int, help="Size of the hidden dim in our ConvLSTM cell")
-    parser.add_argument('--kernel_size', default=3, type=int,
-                        help="Size of the kernel used in our ConvLSTM cell convolutions")
-    args = parser.parse_args()
-
-    net, _, _ = trainer(epochs=args.epochs,
-                        batch_size=args.batch_size,
-                        input_length=args.length,
-                        output_length=args.length,
-                        hidden_dim=args.hidden_dim,
-                        kernel_size=args.kernel_size)
+    net, _, _ = trainer()

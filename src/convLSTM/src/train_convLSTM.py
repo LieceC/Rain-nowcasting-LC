@@ -64,7 +64,6 @@ def trainer(input_shape=(128, 128), input_dim=1, hidden_dim=64, kernel_size=3, i
         t = tqdm(train_dataloader, leave=False, total=len(train_dataloader))
         for batch_idx, sample in enumerate(t):
             inputs, targets = sample['input'], sample['target']
-            # [Batch, sequence, Channel, Height, Width]
             inputs = inputs.to(device)
             targets = targets.to(device)
             optimizer.zero_grad()
@@ -75,24 +74,24 @@ def trainer(input_shape=(128, 128), input_dim=1, hidden_dim=64, kernel_size=3, i
             train_losses.append(average_loss)
             loss.backward()
             optimizer.step()
-
             t.set_postfix({
                 'trainloss': '{:.6f}'.format(average_loss),
                 'epoch': '{:02d}'.format(epoch)
             })
-            save = "checkpoint/batch_size_{}_learning_rate_{}_weight_decay_{}_length_{}_hidden_dim_{}_kernel_size_{}_epoch_{}.pth".format(
-                batch_size,
-                learning_rate,
-                weight_decay,
-                input_length,
-                hidden_dim,
-                kernel_size,
-                epoch)
-            state = {
-                'epoch': epoch,
-                'state_dict': net.state_dict(),
-                'optimizer': optimizer.state_dict()
-            }
+
+        save = "checkpoint/batch_size_{}_learning_rate_{}_weight_decay_{}_length_{}_hidden_dim_{}_kernel_size_{}_epoch_{}.pth".format(
+            batch_size,
+            learning_rate,
+            weight_decay,
+            input_length,
+            hidden_dim,
+            kernel_size,
+            epoch)
+        state = {
+            'epoch': epoch,
+            'state_dict': net.state_dict(),
+            'optimizer': optimizer.state_dict()
+        }
         torch.save(state, save)
         net.eval()
         t = tqdm(valid_dataloader, leave=False, total=len(valid_dataloader))
@@ -114,7 +113,7 @@ def trainer(input_shape=(128, 128), input_dim=1, hidden_dim=64, kernel_size=3, i
                 conf_mat_batch = compute_confusion(pred, targets, thresh)
             confusion_matrix = add_confusion_matrix_on_batch(confusion_matrix, conf_mat_batch, thresh)
 
-        if epoch > 4:
+        if epoch > 50:
             scores_evaluation = model_evaluation(confusion_matrix)
             print("[Validation] metrics_scores : ", scores_evaluation)
             avg_train_losses.append(np.average(train_losses))
@@ -148,3 +147,4 @@ if __name__ == '__main__':
                         output_length=args.length,
                         hidden_dim=args.hidden_dim,
                         kernel_size=args.kernel_size)
+

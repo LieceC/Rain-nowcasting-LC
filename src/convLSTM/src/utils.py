@@ -77,7 +77,6 @@ def plot_output_gt_colored(output, target, input, index, output_dir):
 
     plt.savefig(output_dir + str(index))
 
-
 def sanity_check(rain_files_names, U_wind_files_names, V_wind_files_names):
     """if not (len(rain_files_names) == len(U_wind_files_names) and len(rain_files_names) == len(V_wind_files_names)):
          print("Error : dimension mismatch")

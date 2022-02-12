@@ -10,6 +10,7 @@ from utils import *
 def eval(input_shape=(128, 128), input_dim=1, hidden_dim=64, kernel_size=3, input_length=12, output_length=12,
          batch_size=2):
     torch.manual_seed(1)
+    #change to the path of your checkpoint
     checkpoint = torch.load("checkpoint/test_fix2_model12_at_40.pth", map_location=torch.device('cuda'))
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     net = ConvLSTM(input_shape=input_shape,
@@ -53,7 +54,6 @@ def eval(input_shape=(128, 128), input_dim=1, hidden_dim=64, kernel_size=3, inpu
             save_gif_2(targets[k], 'images/{}_target.gif'.format(index_plot))
             plot_output_gt_colored(pred[k], targets[k], inputs[k], index_plot, 'images/plot_pred_targets')
             index_plot += 1
-
     scores_evaluation = model_evaluation(confusion_matrix)
     print("[Validation] metrics_scores : ", scores_evaluation)
 

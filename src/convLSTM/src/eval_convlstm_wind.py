@@ -10,6 +10,7 @@ from utils import *
 def eval(input_shape=(128, 128), input_dim=3, hidden_dim=64, kernel_size=3, input_length=12, output_length=12,
          batch_size=2):
     torch.manual_seed(1)
+    #set to your checkpoint path
     checkpoint = torch.load("checkpoint/wind_fix_model1_at_51.pth", map_location=torch.device('cuda'))
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     net = ConvLSTM(input_shape=input_shape,

@@ -1,6 +1,6 @@
 ﻿# Rain-nowcasting-LC
 
-All of the models are done for a training on a meteonet-dataset
+All of the models are done for a training on the meteonet-dataset
 
 Be careful, you need to change the folder path of the data in `train_convLSTM.py` and `train_convLSTM_with_wind.py`.
 We also deleted from the dataset all PPMatrix folders since we don't use them to build the dataset.
